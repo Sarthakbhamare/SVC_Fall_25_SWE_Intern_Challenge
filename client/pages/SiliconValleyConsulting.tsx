@@ -25,12 +25,16 @@ interface CurrencyRate {
   rate: number;
 }
 
-export default function SiliconValleyConsulting() {
+interface SiliconValleyConsultingProps {
+  initialCanStartJob?: boolean;
+}
+
+export default function SiliconValleyConsulting({ initialCanStartJob = false }: SiliconValleyConsultingProps = {}) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [joinSlackRequested, setJoinSlackRequested] = useState(false);
-  const [canStartJob, setCanStartJob] = useState(false);
+  const [canStartJob, setCanStartJob] = useState(initialCanStartJob);
   const [message, setMessage] = useState("");
   const [currency, setCurrency] = useState<CurrencyRate>({
     code: "USD",

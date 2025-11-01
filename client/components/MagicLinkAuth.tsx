@@ -109,7 +109,6 @@ export function MagicLinkAuth({ onClose }: MagicLinkAuthProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              required
             />
           </div>
 

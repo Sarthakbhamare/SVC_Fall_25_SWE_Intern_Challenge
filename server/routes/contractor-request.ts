@@ -8,6 +8,20 @@ import {
 
 let pool: Pool | null = null;
 
+// Exported for testing - determines which database URL to use based on environment
+export function getDatabaseUrl(): string {
+  const databaseUrl = process.env.NODE_ENV === 'test' 
+    ? process.env.TEST_DATABASE_URL 
+    : process.env.DATABASE_URL;
+  
+  if (!databaseUrl) {
+    const envVar = process.env.NODE_ENV === 'test' ? 'TEST_DATABASE_URL' : 'DATABASE_URL';
+    throw new Error(`${envVar} environment variable is not set`);
+  }
+  
+  return databaseUrl;
+}
+
 // PostgreSQL connection
 function getDatabase(): Pool {
   console.log("[DB] Getting database connection...");
@@ -17,17 +31,18 @@ function getDatabase(): Pool {
     return pool;
   }
 
-  // Use TEST_DATABASE_URL in test environment, otherwise DATABASE_URL
-  const databaseUrl = process.env.NODE_ENV === 'test' 
-    ? process.env.TEST_DATABASE_URL 
-    : process.env.DATABASE_URL;
-  console.log("[DB] Database URL configured:", databaseUrl ? "YES" : "NO");
+  const logDatabaseConfigured = (value?: string) => {
+    console.log("[DB] Database URL configured:", value ? "YES" : "NO");
+  };
 
-  if (!databaseUrl) {
-    const envVar = process.env.NODE_ENV === 'test' ? 'TEST_DATABASE_URL' : 'DATABASE_URL';
-    console.error(`[DB] ${envVar} environment variable is not set`);
-    throw new Error(`${envVar} environment variable is not set`);
+  let databaseUrl: string | undefined;
+  try {
+    databaseUrl = getDatabaseUrl();
+  } catch (error) {
+    logDatabaseConfigured(undefined);
+    throw error;
   }
+  logDatabaseConfigured(databaseUrl);
 
   try {
     console.log("[DB] Creating PostgreSQL connection pool...");

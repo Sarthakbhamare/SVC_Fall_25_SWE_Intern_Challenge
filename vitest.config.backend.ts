@@ -6,26 +6,32 @@ export default defineConfig({
     name: 'backend',
     environment: 'node',
     globals: true,
+    threads: false,
+    isolate: true,
+    include: ['server/**/*.test.ts', 'shared/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       reportsDirectory: './coverage/backend',
-      include: ['server/**/*.ts'],
+      all: true,
+      include: ['server/**/*.ts', 'shared/**/*.ts'],
       exclude: [
         'server/**/*.test.ts',
         'server/**/*.spec.ts',
         'server/node-build.ts',
+        'server/tests/**',
+        'shared/api.ts', // Type-only file with no runtime code
       ],
       thresholds: {
         global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+          statements: 100,
         },
       },
     },
-    setupFiles: ['./tests/setup-backend.ts'],
+    setupFiles: ['./server/tests/setup.ts'],
   },
   resolve: {
     alias: {

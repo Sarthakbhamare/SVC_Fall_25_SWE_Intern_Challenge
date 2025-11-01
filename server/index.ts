@@ -14,6 +14,20 @@ console.log("- REDDIT_CLIENT_ID:", process.env.REDDIT_CLIENT_ID ? "configured" :
 console.log("- REDDIT_CLIENT_SECRET:", process.env.REDDIT_CLIENT_SECRET ? "configured" : "NOT SET");
 console.log("========================================================");
 
+/**
+ * Formats error response based on environment.
+ * In development mode, includes stack trace for debugging.
+ * In production/test, omits stack trace for security.
+ */
+export function formatErrorResponse(err: Error, nodeEnv?: string): { success: boolean; message: string; error?: string } {
+  const env = nodeEnv ?? process.env.NODE_ENV;
+  return {
+    success: false,
+    message: `Server error: ${err.message}`,
+    error: env === 'development' ? err.stack : undefined
+  };
+}
+
 export function createServer() {
   const app = express();
 
@@ -35,6 +49,8 @@ export function createServer() {
 
   // Middleware
   app.use(cors());
+  app.use(express.raw({ type: 'application/octet-stream', limit: '10mb' }));
+  app.use(express.text({ type: 'text/plain', limit: '10mb' }));
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -63,11 +79,8 @@ export function createServer() {
     console.error("[SERVER] ===========================================================");
 
     if (!res.headersSent) {
-      res.status(500).json({
-        success: false,
-        message: `Server error: ${err.message}`,
-        error: process.env.NODE_ENV === 'development' ? err.stack : undefined
-      });
+      const errorResponse = formatErrorResponse(err);
+      res.status(500).json(errorResponse);
     }
   });
 

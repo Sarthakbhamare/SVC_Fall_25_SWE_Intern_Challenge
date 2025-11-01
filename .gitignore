@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Coverage reports
+coverage/
+client/coverage/
+server/coverage/
+.nyc_output
+
+# Local environment overrides
+.env.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

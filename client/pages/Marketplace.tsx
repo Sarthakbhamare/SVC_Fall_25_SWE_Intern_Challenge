@@ -19,7 +19,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 
-interface Company {
+export interface Company {
   id: string;
   name: string;
   acronym: string;
@@ -38,7 +38,11 @@ interface CurrencyRate {
   rate: number;
 }
 
-export default function Marketplace() {
+interface MarketplaceProps {
+  companiesOverride?: Company[];
+}
+
+export default function Marketplace({ companiesOverride }: MarketplaceProps = {}) {
   const navigate = useNavigate();
   const [showLockedAlert, setShowLockedAlert] = useState(false);
   const [currency, setCurrency] = useState<CurrencyRate>({
@@ -152,7 +156,7 @@ export default function Marketplace() {
     return `${currency.symbol}${converted}`;
   };
 
-  const companies: Company[] = [
+  const companies: Company[] = companiesOverride ?? [
     // Available company
     {
       id: "silicon-valley-consulting",
