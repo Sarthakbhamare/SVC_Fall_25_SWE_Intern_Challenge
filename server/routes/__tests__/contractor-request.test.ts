@@ -527,4 +527,19 @@ describe('POST /api/contractor-request', () => {
     process.env.DATABASE_URL = originalUrl;
     vi.resetModules();
   });
+
+  it('covers JSON parse error handling in catch block (lines 178-183)', async () => {
+    const app = buildApp();
+
+    const response = await request(app)
+      .post('/api/contractor-request')
+      .set('Content-Type', 'application/octet-stream')
+      .send(Buffer.from('{invalid json}'))
+      .expect(400);
+
+    expect(response.body).toEqual({
+      success: false,
+      message: 'Invalid JSON body (buffer)',
+    });
+  });
 });

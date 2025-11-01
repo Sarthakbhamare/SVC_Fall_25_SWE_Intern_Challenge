@@ -926,4 +926,35 @@ describe('social-qualify-form database utilities', () => {
     vi.doUnmock('pg');
     vi.resetModules();
   });
+
+  it('covers Zod validation error formatting (lines 369-384)', async () => {
+    const app = buildApp();
+
+    // Send invalid data to trigger Zod validation error with formatted issues
+    const response = await request(app)
+      .post('/api/social-qualify-form')
+      .send({
+        email: 'invalid-email', // Invalid email format
+        phone: 'abc', // Invalid phone format
+        redditUsername: '', // Empty string
+      })
+      .expect(400);
+
+    expect(response.body.success).toBe(false);
+    expect(response.body.message).toContain('Please enter a valid email address');
+  });
+
+  it('covers empty body handling in check-user-exists (lines 169-174)', async () => {
+    const app = buildApp();
+
+    // Send request without a body to trigger parseRequestBody returning undefined
+    const response = await request(app)
+      .post('/api/check-user-exists')
+      .expect(400);
+
+    expect(response.body).toEqual({
+      success: false,
+      message: 'Request body is required',
+    });
+  });
 });
