@@ -15,8 +15,9 @@ describe('handleTestMongo', () => {
     process.env.REDDIT_CLIENT_SECRET = 'secret';
 
     const res = createMockResponse();
+    const next = vi.fn();
 
-    await handleTestMongo({} as any, res);
+    await handleTestMongo({} as any, res, next);
 
     expect(res.json).toHaveBeenCalledWith({
       mongoConfigured: true,
