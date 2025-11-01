@@ -59,6 +59,11 @@ jobs:
         env:
           NODE_ENV: test
           TEST_DATABASE_URL: postgresql://svc_user:svc_pass@localhost:5432/svc_test
+          PGUSER: svc_user
+          PGPASSWORD: svc_pass
+          PGDATABASE: svc_test
+          PGHOST: localhost
+          PGPORT: 5432
           REDDIT_CLIENT_ID: test-id
           REDDIT_CLIENT_SECRET: test-secret
         run: pnpm run test:backend
