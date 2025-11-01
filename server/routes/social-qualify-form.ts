@@ -5,6 +5,7 @@ import {
   UserSchema,
   type SocialQualifyResponse,
 } from "../../shared/schemas";
+import { parseRequestBody } from "./_helpers";
 
 let pool: Pool | null = null;
 
@@ -161,37 +162,15 @@ export const handleCheckUserExists: RequestHandler = async (req, res) => {
   const client = getDatabase();
 
   try {
-    // Handle case where body is a Buffer (serverless function issue)
-    let parsedBody = req.body;
-    console.log("[API] Raw req.body type:", typeof req.body);
-    console.log("[API] Is Buffer:", Buffer.isBuffer(req.body));
+    console.log("[API] Parsing request body...");
+    const parsedBody = parseRequestBody(req.body);
     
-    if (Buffer.isBuffer(req.body)) {
-      console.log("[API] Body is Buffer, converting to string and parsing JSON");
-      const bodyString = req.body.toString('utf8');
-      console.log("[API] Body string:", bodyString);
-      try {
-        parsedBody = JSON.parse(bodyString);
-        console.log("[API] Successfully parsed JSON from buffer:", parsedBody);
-      } catch (parseError) {
-        console.error("[API] Failed to parse JSON from buffer:", parseError);
-        return res.status(400).json({
-          success: false,
-          message: "Invalid JSON in request body",
-        });
-      }
-    } else if (typeof req.body === 'string') {
-      console.log("[API] Body is string, parsing JSON");
-      try {
-        parsedBody = JSON.parse(req.body);
-        console.log("[API] Successfully parsed JSON from string:", parsedBody);
-      } catch (parseError) {
-        console.error("[API] Failed to parse JSON from string:", parseError);
-        return res.status(400).json({
-          success: false,
-          message: "Invalid JSON in request body",
-        });
-      }
+    if (!parsedBody) {
+      console.log("[API] Request body is missing or empty");
+      return res.status(400).json({
+        success: false,
+        message: "Request body is required",
+      });
     }
     
     const { email, phone } = parsedBody;
@@ -225,6 +204,15 @@ export const handleCheckUserExists: RequestHandler = async (req, res) => {
     console.log("[API] ==================== CHECK USER EXISTS COMPLETED ====================");
   } catch (error: any) {
     console.error("[API] Error checking user existence:", error);
+    
+    // Handle JSON parse errors
+    if (error.message?.includes('Invalid JSON')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: `Internal server error: ${error.message}`,
@@ -243,37 +231,15 @@ export const handleSocialQualifyForm: RequestHandler = async (req, res) => {
   const client = getDatabase();
 
   try {
-    // Handle case where body is a Buffer or string (serverless function issue)
-    let parsedBody = req.body;
-    console.log("[API] Raw req.body type:", typeof req.body);
-    console.log("[API] Is Buffer:", Buffer.isBuffer(req.body));
+    console.log("[API] Parsing request body...");
+    const parsedBody = parseRequestBody(req.body);
     
-    if (Buffer.isBuffer(req.body)) {
-      console.log("[API] Body is Buffer, converting to string and parsing JSON");
-      const bodyString = req.body.toString('utf8');
-      console.log("[API] Body string:", bodyString);
-      try {
-        parsedBody = JSON.parse(bodyString);
-        console.log("[API] Successfully parsed JSON from buffer:", parsedBody);
-      } catch (parseError) {
-        console.error("[API] Failed to parse JSON from buffer:", parseError);
-        return res.status(400).json({
-          success: false,
-          message: "Invalid JSON in request body",
-        });
-      }
-    } else if (typeof req.body === 'string') {
-      console.log("[API] Body is string, parsing JSON");
-      try {
-        parsedBody = JSON.parse(req.body);
-        console.log("[API] Successfully parsed JSON from string:", parsedBody);
-      } catch (parseError) {
-        console.error("[API] Failed to parse JSON from string:", parseError);
-        return res.status(400).json({
-          success: false,
-          message: "Invalid JSON in request body",
-        });
-      }
+    if (!parsedBody) {
+      console.log("[API] Request body is missing or empty");
+      return res.status(400).json({
+        success: false,
+        message: "Request body is required",
+      } as SocialQualifyResponse);
     }
 
     console.log("[API] Validating request body with schema...");
@@ -388,6 +354,15 @@ export const handleSocialQualifyForm: RequestHandler = async (req, res) => {
       "[API] Full error object:",
       JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
     );
+
+    // Handle JSON parse errors
+    if (error.message?.includes('Invalid JSON')) {
+      console.log("[API] Sending 400 response for JSON parse error");
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      } as SocialQualifyResponse);
+    }
 
     if (error.issues) {
       // Zod validation errors

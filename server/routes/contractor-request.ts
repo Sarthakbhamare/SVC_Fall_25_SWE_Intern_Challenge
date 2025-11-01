@@ -5,6 +5,7 @@ import {
   ContractorSchema,
   type ContractorRequestResponse,
 } from "../../shared/schemas";
+import { parseRequestBody } from "./_helpers";
 
 let pool: Pool | null = null;
 
@@ -71,9 +72,20 @@ export const handleContractorRequest: RequestHandler = async (req, res) => {
   const client = getDatabase();
 
   try {
+    console.log("[API] Parsing request body...");
+    const parsed = parseRequestBody(req.body);
+    
+    if (!parsed) {
+      console.log("[API] Request body is missing or empty");
+      return res.status(400).json({
+        success: false,
+        message: "Request body is required",
+      } as ContractorRequestResponse);
+    }
+    
     console.log("[API] Validating request body with schema...");
     // Validate request body
-    const validatedData = ContractorRequestSchema.parse(req.body);
+    const validatedData = ContractorRequestSchema.parse(parsed);
     console.log("[API] Request body validation successful:", JSON.stringify(validatedData, null, 2));
 
     // Find the user by email
@@ -160,6 +172,15 @@ export const handleContractorRequest: RequestHandler = async (req, res) => {
     console.error("[API] Error message:", error.message);
     console.error("[API] Error stack:", error.stack);
     console.error("[API] Full error object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+
+    // Handle JSON parse errors
+    if (error.message?.includes('Invalid JSON')) {
+      console.log("[API] Sending 400 response for JSON parse error");
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      } as ContractorRequestResponse);
+    }
 
     if (error.issues) {
       // Zod validation errors
