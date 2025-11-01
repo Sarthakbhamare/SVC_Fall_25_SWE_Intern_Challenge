@@ -131,6 +131,11 @@ async function verifyRedditAccount(username: string): Promise<boolean> {
       },
     );
 
+    if (!userResponse || typeof userResponse.status === 'undefined') {
+      console.error(`[REDDIT] Invalid response from Reddit API for user '${username}'`);
+      return false;
+    }
+
     console.log(
       `[REDDIT] User verification response status: ${userResponse.status}`,
     );
