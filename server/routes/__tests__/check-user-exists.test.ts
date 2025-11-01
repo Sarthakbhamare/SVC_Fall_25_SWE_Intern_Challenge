@@ -100,7 +100,7 @@ describe('POST /api/check-user-exists', () => {
 
     expect(response.body).toEqual({
       success: false,
-      message: 'Invalid JSON in request body',
+      message: 'Invalid JSON body (buffer)',
     });
   });
 

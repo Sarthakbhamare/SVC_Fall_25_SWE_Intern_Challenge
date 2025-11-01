@@ -202,7 +202,7 @@ describe('POST /api/social-qualify-form', () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(response.body).toEqual({
       success: false,
-      message: 'Invalid JSON in request body',
+      message: 'Invalid JSON body (buffer)',
     });
   });
 
@@ -651,17 +651,17 @@ describe('POST /api/check-user-exists additional branch coverage', () => {
     // Send invalid JSON as Buffer
     const invalidJson = Buffer.from('{invalid json}');
     
-    await request(app)
+    const response = await request(app)
       .post('/api/check-user-exists')
       .set('Content-Type', 'application/octet-stream')
       .send(invalidJson)
       .expect(400);
     
-    // Lines 154-159: catch block for JSON.parse error on Buffer
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[API] Failed to parse JSON from buffer:',
-      expect.anything()
-    );
+    // Verify the error response matches the new parseRequestBody error format
+    expect(response.body).toEqual({
+      success: false,
+      message: 'Invalid JSON body (buffer)',
+    });
     
     consoleErrorSpy.mockRestore();
   });
@@ -672,17 +672,17 @@ describe('POST /api/check-user-exists additional branch coverage', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     // Send invalid JSON as string
-    await request(app)
+    const response = await request(app)
       .post('/api/check-user-exists')
       .set('Content-Type', 'text/plain')
       .send('{invalid json string}')
       .expect(400);
     
-    // Lines 166-171: catch block for JSON.parse error on string
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[API] Failed to parse JSON from string:',
-      expect.anything()
-    );
+    // Verify the error response matches the new parseRequestBody error format
+    expect(response.body).toEqual({
+      success: false,
+      message: 'Invalid JSON body (string)',
+    });
     
     consoleErrorSpy.mockRestore();
   });
@@ -697,17 +697,17 @@ describe('POST /api/social-qualify-form additional branch coverage', () => {
     // Send invalid JSON as Buffer
     const invalidJson = Buffer.from('{not valid json}');
     
-    await request(app)
+    const response = await request(app)
       .post('/api/social-qualify-form')
       .set('Content-Type', 'application/octet-stream')
       .send(invalidJson)
       .expect(400);
     
-    // Lines 236-241: catch block for JSON.parse error on Buffer
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[API] Failed to parse JSON from buffer:',
-      expect.anything()
-    );
+    // Verify the error response matches the new parseRequestBody error format
+    expect(response.body).toEqual({
+      success: false,
+      message: 'Invalid JSON body (buffer)',
+    });
     
     consoleErrorSpy.mockRestore();
   });
@@ -718,17 +718,17 @@ describe('POST /api/social-qualify-form additional branch coverage', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     // Send invalid JSON as string
-    await request(app)
+    const response = await request(app)
       .post('/api/social-qualify-form')
       .set('Content-Type', 'text/plain')
       .send('{this is not valid json either}')
       .expect(400);
     
-    // Lines 248-253: catch block for JSON.parse error on string
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[API] Failed to parse JSON from string:',
-      expect.anything()
-    );
+    // Verify the error response matches the new parseRequestBody error format
+    expect(response.body).toEqual({
+      success: false,
+      message: 'Invalid JSON body (string)',
+    });
     
     consoleErrorSpy.mockRestore();
   });
