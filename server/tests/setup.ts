@@ -65,6 +65,13 @@ const initializeDatabase = async () => {
 
     const { Pool: PgPool } = await import('pg');
     pool = new PgPool({ connectionString: connectionUri }) as Pool;
+    pool.on('error', (err: any) => {
+      if (err?.code === '57P01') {
+        // Postgres shuts down connections during container stop; ignore to avoid crashing tests
+        return;
+      }
+      console.error('[DB] Pooled connection error:', err);
+    });
   } catch (error) {
     usingInMemoryDatabase = true;
     console.warn('⚠️  Falling back to in-memory PostgreSQL for tests:', error);
@@ -74,6 +81,9 @@ const initializeDatabase = async () => {
 
     const { Pool: InMemoryPool } = await import('pg');
     pool = new InMemoryPool() as Pool;
+    pool.on('error', (err: any) => {
+      console.error('[DB] In-memory pool error:', err);
+    });
     process.env.TEST_DATABASE_URL = 'pg-mem://svc/internal';
   }
 
