@@ -112,6 +112,16 @@ const initializeDatabase = async () => {
 
 const initialization = initializeDatabase();
 
+// Suppress expected PostgreSQL connection termination errors during test teardown
+process.on('unhandledRejection', (error: any) => {
+  if (error?.code === '57P01') {
+    // Error code 57P01: "terminating connection due to administrator command"
+    // This is expected when the test container stops while connections are active
+    return;
+  }
+  throw error;
+});
+
 export const getTestPool = () => {
   if (!pool) {
     throw new Error('Test database pool is not initialised');
@@ -134,11 +144,15 @@ afterAll(async () => {
   await truncateTables();
 
   if (pool) {
-    await pool.end();
+    await pool.end().catch(() => {
+      // Suppress connection termination errors during teardown
+    });
   }
 
   if (container && !usingInMemoryDatabase) {
-    await container.stop();
+    await container.stop().catch(() => {
+      // Suppress container stop errors
+    });
   }
 
   if (usingInMemoryDatabase) {
